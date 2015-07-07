@@ -11,7 +11,7 @@ You can install this plugin by going to your ExtPlug settings menu, pressing
 "Install Plugin", and entering this Plugin URL:
 
 ```
-[YOUR HOST URL HERE];extplug/chat-images/main
+https://extplug.github.io/chat-images/build/chat-images.js;extplug/chat-images/main
 ```
 
 ## Building
