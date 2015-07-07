@@ -1,0 +1,71 @@
+import Plugin from 'extplug/Plugin'
+import Events from 'plug/core/Events'
+import chatFacade from 'plug/facades/chatFacade'
+import * as embedders from './embedders'
+import ImageView from './ImageView'
+import VideoView from './VideoView'
+import styles from './style'
+import { each, uniqueId } from 'underscore'
+import { around } from 'meld'
+import $ from 'jquery'
+
+const embedSymbol = window.Symbol ? Symbol('images') : `__${Math.random()}`
+
+const ChatImages = Plugin.extend({
+  name: 'Chat Images',
+  description: 'Embeds chat images in chat.',
+
+  enable() {
+    this.advice = around(chatFacade, 'parse', joinpoint => {
+      let msg = joinpoint.args[1]
+      this.onBeforeReceive(msg)
+      return joinpoint.proceed(msg.message, msg, joinpoint.args[2])
+    })
+    Events.on('chat:afterreceive', this.onAfterReceive, this)
+    this.Style(styles)
+  },
+
+  disable() {
+    this.advice.remove()
+    Events.off('chat:afterreceive', this.onAfterReceive)
+  },
+
+  addEmbed(msg, url, view) {
+    const id = uniqueId('embed')
+    msg[embedSymbol].push({
+      id: id,
+      url: url,
+      view: view
+    })
+    return `<i id="${id}"></i>`
+  },
+
+  onBeforeReceive(msg) {
+    msg[embedSymbol] = []
+
+    msg.message = msg.message.replace(embedders.generic, url => {
+      return this.addEmbed(msg, url, new ImageView({ url: url }))
+    })
+
+    msg.message = msg.message.replace(embedders.gifv, url => {
+      const path = url.split('.').slice(0, -1).join('.')
+      return this.addEmbed(msg, url, new VideoView({
+        url: url,
+        poster: `${path}.jpg`,
+        sources: [ `${path}.webm`, `${path}.mp4` ]
+      }))
+    })
+  },
+  onAfterReceive(msg, el) {
+    console.log(msg[embedSymbol])
+    if (msg[embedSymbol]) {
+      msg[embedSymbol].forEach(embed => {
+        el.find(`#${embed.id}`).replaceWith(embed.view.$el)
+        embed.view.render()
+      })
+    }
+  }
+
+})
+
+export default ChatImages

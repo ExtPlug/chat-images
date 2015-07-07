@@ -1,0 +1,20 @@
+{
+  "name": "extplug-chat-images",
+  "version": "0.0.1",
+  "license": "MIT",
+  "description": "ExtPlug plugin that embeds image links in the chat.",
+  "keywords": [
+    "extplug-plugin"
+  ],
+  "devDependencies": {
+    "del": "^1.2.0",
+    "gulp": "^3.8.11",
+    "gulp-babel": "^5.1.0",
+    "mkdirp": "^0.5.1",
+    "requirejs": "^2.1.18",
+    "run-sequence": "^1.1.1"
+  },
+  "scripts": {
+    "build": "gulp build"
+  }
+}
