@@ -57,12 +57,20 @@ const ChatImages = Plugin.extend({
     })
   },
   onAfterReceive(msg, el) {
-    console.log(msg[embedSymbol])
     if (msg[embedSymbol]) {
       msg[embedSymbol].forEach(embed => {
         el.find(`#${embed.id}`).replaceWith(embed.view.$el)
+        embed.view.once('load', this.checkScroll, this)
         embed.view.render()
       })
+    }
+  },
+
+  checkScroll() {
+    let msg = $('#chat-messages')
+    let shouldScroll = msg.scrollTop() > (msg[0].scrollHeight - msg.height() - msg.children().last().height())
+    if (shouldScroll) {
+      msg.scrollTop(msg[0].scrollHeight)
     }
   }
 

@@ -14,10 +14,14 @@ const EmbedView = View.extend({
       .attr('title', this.options.url)
       .attr('target', '_blank')
 
+    let image = this.getImage().on('load', () => {
+      this.trigger('load')
+    })
+
     this.$el
       .empty()
       .append(this.$close)
-      .append(this.$link.append(this.getImage()))
+      .append(this.$link.append(image))
 
     this.$close.on('click', this.close.bind(this))
 
