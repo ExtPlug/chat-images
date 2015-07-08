@@ -20,11 +20,17 @@ define('extplug/chat-images/EmbedView',['exports', 'module', 'jquery', 'backbone
     className: 'extplug-chat-image',
 
     render: function render() {
+      var _this = this;
+
       this.$close = _$('<div />').addClass('extplug-close').append(_$('<i />').addClass('icon icon-dialog-close'));
 
       this.$link = _$('<a />').attr('href', this.options.url).attr('title', this.options.url).attr('target', '_blank');
 
-      this.$el.empty().append(this.$close).append(this.$link.append(this.getImage()));
+      var image = this.getImage().on('load', function () {
+        _this.trigger('load');
+      });
+
+      this.$el.empty().append(this.$close).append(this.$link.append(image));
 
       this.$close.on('click', this.close.bind(this));
 
@@ -77,6 +83,7 @@ define('extplug/chat-images/VideoView',['exports', 'module', './EmbedView'], fun
       this.$video = $('<video />').attr({
         autoplay: true,
         loop: true,
+        muted: true,
         poster: this.options.poster || ''
       });
 
@@ -202,12 +209,22 @@ define('extplug/chat-images/main',['exports', 'module', 'extplug/Plugin', 'plug/
       });
     },
     onAfterReceive: function onAfterReceive(msg, el) {
-      console.log(msg[embedSymbol]);
+      var _this3 = this;
+
       if (msg[embedSymbol]) {
         msg[embedSymbol].forEach(function (embed) {
           el.find('#' + embed.id).replaceWith(embed.view.$el);
+          embed.view.once('load', _this3.checkScroll, _this3);
           embed.view.render();
         });
+      }
+    },
+
+    checkScroll: function checkScroll() {
+      var msg = _$('#chat-messages');
+      var shouldScroll = msg.scrollTop() > msg[0].scrollHeight - msg.height() - msg.children().last().height();
+      if (shouldScroll) {
+        msg.scrollTop(msg[0].scrollHeight);
       }
     }
 
