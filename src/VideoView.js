@@ -8,6 +8,7 @@ const VideoView = EmbedView.extend({
     this.$video = $('<video />').attr({
       autoplay: true,
       loop: true,
+      muted: true,
       poster: this.options.poster || ''
     })
 
