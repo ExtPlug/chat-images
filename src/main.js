@@ -17,9 +17,13 @@ const ChatImages = Plugin.extend({
 
   enable() {
     this.advice = around(chatFacade, 'parse', joinpoint => {
-      let msg = joinpoint.args[1]
-      this.onBeforeReceive(msg)
-      return joinpoint.proceed(msg.message, msg, joinpoint.args[2])
+      // only intercept parse() calls that are actually used for chat
+      if (joinpoint.args.length > 1) {
+        let msg = joinpoint.args[1]
+        this.onBeforeReceive(msg)
+        return joinpoint.proceed(msg.message, msg, joinpoint.args[2])
+      }
+      return joinpoint.proceed()
     })
     Events.on('chat:afterreceive', this.onAfterReceive, this)
     this.Style(styles)
