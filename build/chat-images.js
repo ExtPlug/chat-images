@@ -167,9 +167,13 @@ define('extplug/chat-images/main',['exports', 'module', 'extplug/Plugin', 'plug/
       var _this = this;
 
       this.advice = _meld.around(_chatFacade, 'parse', function (joinpoint) {
-        var msg = joinpoint.args[1];
-        _this.onBeforeReceive(msg);
-        return joinpoint.proceed(msg.message, msg, joinpoint.args[2]);
+        // only intercept parse() calls that are actually used for chat
+        if (joinpoint.args.length > 1) {
+          var msg = joinpoint.args[1];
+          _this.onBeforeReceive(msg);
+          return joinpoint.proceed(msg.message, msg, joinpoint.args[2]);
+        }
+        return joinpoint.proceed();
       });
       _Events.on('chat:afterreceive', this.onAfterReceive, this);
       this.Style(_styles);
