@@ -23,7 +23,15 @@ const EmbedView = View.extend({
       .append(this.$close)
       .append(this.$link.append(image))
 
-    this.$close.on('click', this.close.bind(this))
+    this.$close.on('click', e => {
+      // ctrl+click closes all
+      if (e.ctrlKey) {
+        $('#chat-messages .extplug-chat-image .extplug-close').click()
+      }
+      else {
+        this.close()
+      }
+    })
 
     return this
   },
