@@ -15,6 +15,15 @@ const ChatImages = Plugin.extend({
   name: 'Chat Images',
   description: 'Embeds chat images in chat.',
 
+  commands: {
+    collapse: 'closeAll'
+  },
+
+  init(id, ext) {
+    this._super(id, ext)
+    this.closeAll = this.closeAll.bind(this)
+  },
+
   enable() {
     this.advice = around(chatFacade, 'parse', joinpoint => {
       // only intercept parse() calls that are actually used for chat
@@ -42,6 +51,10 @@ const ChatImages = Plugin.extend({
       view: view
     })
     return `<i id="${id}"></i>`
+  },
+
+  closeAll() {
+    $('#chat-messages .extplug-chat-image .extplug-close').click()
   },
 
   onBeforeReceive(msg) {
