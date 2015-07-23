@@ -51,6 +51,13 @@ const ChatImages = Plugin.extend({
       return this.addEmbed(msg, url, new ImageView({ url: url }))
     })
 
+    msg.message = msg.message.replace(embedders.webm, url => {
+      return this.addEmbed(msg, url, new VideoView({
+        url: url,
+        sources: [ url ]
+      }))
+    })
+
     msg.message = msg.message.replace(embedders.gifv, url => {
       const path = url.split('.').slice(0, -1).join('.')
       return this.addEmbed(msg, url, new VideoView({
