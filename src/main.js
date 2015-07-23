@@ -9,7 +9,7 @@ import { each, uniqueId } from 'underscore'
 import { around } from 'meld'
 import $ from 'jquery'
 
-const embedSymbol = window.Symbol ? Symbol('images') : `__${Math.random()}`
+const embedSymbol = Symbol('images')
 
 const ChatImages = Plugin.extend({
   name: 'Chat Images',
