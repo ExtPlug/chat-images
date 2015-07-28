@@ -8,8 +8,10 @@ define('extplug/chat-images/embedders',["exports"], function (exports) {
   exports.generic = generic;
   var webm = /\b(https?):\/\/\S+?\/\S+\.webm\b(?:\?\S+)?/gi;
   exports.webm = webm;
-  var gifv = /https?:\/\/i\.imgur\.com\/(?:.{7})\.(?:gifv|mp4|webm)/gi;
+  var gifv = /\bhttps?:\/\/i\.imgur\.com\/(?:.{7})\.(?:gifv|mp4|webm)/gi;
   exports.gifv = gifv;
+  var youTube = /\bhttps?:\/\/(?:www\.)?(?:youtu\.be\/|youtube\.com\/watch.*?\?v=)(\S+)/gi;
+  exports.youTube = youTube;
 });
 define('extplug/chat-images/EmbedView',['exports', 'module', 'jquery', 'backbone'], function (exports, module, _jquery, _backbone) {
   'use strict';
@@ -28,11 +30,7 @@ define('extplug/chat-images/EmbedView',['exports', 'module', 'jquery', 'backbone
 
       this.$link = _$('<a />').attr('href', this.options.url).attr('title', this.options.url).attr('target', '_blank');
 
-      var image = this.getImage().on('load', function () {
-        _this.trigger('load');
-      });
-
-      this.$el.empty().append(this.$close).append(this.$link.append(image));
+      this.$el.empty().append(this.$close).append(this.$link);
 
       this.$close.on('click', function (e) {
         // ctrl+click closes all
@@ -46,29 +44,58 @@ define('extplug/chat-images/EmbedView',['exports', 'module', 'jquery', 'backbone
       return this;
     },
 
+    resize: function resize() {
+      var w = this.$link.width();
+      if (w < this.$el.width()) {
+        // keep things at least 30px wide so the close icon fits in the message
+        this.$el.width(Math.max(w, 30));
+      }
+    },
+
     close: function close() {
       this.$link.text(this.options.url);
       this.$el.replaceWith(this.$link);
       this.destroy();
+      this.$link = null;
+      this.$close = null;
     }
 
   });
 
   module.exports = EmbedView;
 });
-define('extplug/chat-images/ImageView',['exports', 'module', './EmbedView'], function (exports, module, _EmbedView) {
+define('extplug/chat-images/ImageView',['exports', 'module', './EmbedView', 'jquery'], function (exports, module, _EmbedView, _jquery) {
   'use strict';
 
   var _interopRequire = function (obj) { return obj && obj.__esModule ? obj['default'] : obj; };
 
   var _EmbedView2 = _interopRequire(_EmbedView);
 
+  var _$ = _interopRequire(_jquery);
+
   var ImageView = _EmbedView2.extend({
     className: 'extplug-chat-image',
 
     getImage: function getImage() {
-      return $('<img />').attr('alt', this.options.url).attr('src', this.options.url);
+      return _$('<img />').attr('alt', this.options.url).attr('src', this.options.url);
+    },
+
+    render: function render() {
+      var _this = this;
+
+      this._super();
+
+      this.$image = this.getImage();
+      this.$link.append(this.$image);
+
+      this.$image.on('load', function () {
+        _this.resize();
+        _this.trigger('load');
+      });
+
+      return this;
     }
+
   });
 
   module.exports = ImageView;
@@ -87,9 +114,7 @@ define('extplug/chat-images/VideoView',['exports', 'module', './EmbedView'], fun
   var VideoView = _EmbedView2.extend({
 
     getImage: function getImage() {
-      var _this = this;
-
-      this.$video = $('<video />').attr({
+      var video = $('<video />').attr({
         autoplay: true,
         loop: true,
         muted: true,
@@ -97,17 +122,103 @@ define('extplug/chat-images/VideoView',['exports', 'module', './EmbedView'], fun
       });
 
       this.options.sources.forEach(function (url) {
-        _this.$video.append($('<source />').attr({
+        video.append($('<source />').attr({
           href: url,
           type: 'video/' + getExtension(url)
         }));
       });
 
-      return this.$video;
+      return video;
+    },
+
+    render: function render() {
+      var _this = this;
+
+      this._super();
+
+      this.$video = this.getImage();
+      this.$link.append(this.$video);
+
+      this.$video.on('load', function () {
+        _this.trigger('load');
+      });
+
+      return this;
     }
   });
 
   module.exports = VideoView;
+});
+define('extplug/chat-images/YouTubeView',['exports', 'module', './EmbedView', 'jquery', 'backbone', 'plug/core/Events', 'plug/events/PreviewEvent'], function (exports, module, _EmbedView, _jquery, _backbone, _plugCoreEvents, _plugEventsPreviewEvent) {
+  'use strict';
+
+  var _interopRequire = function (obj) { return obj && obj.__esModule ? obj['default'] : obj; };
+
+  var _EmbedView2 = _interopRequire(_EmbedView);
+
+  var _$ = _interopRequire(_jquery);
+
+  var _Events = _interopRequire(_plugCoreEvents);
+
+  var _PreviewEvent = _interopRequire(_plugEventsPreviewEvent);
+
+  var YouTubeView = _EmbedView2.extend({
+
+    getThumbUrl: function getThumbUrl() {
+      return 'https://i.ytimg.com/vi/' + this.options.id + '/hqdefault.jpg';
+    },
+    getEmbedUrl: function getEmbedUrl() {
+      // autoplay is ok because this is always triggered by a click
+      return 'https://www.youtube-nocookie.com/embed/' + this.options.id + '?autoplay=1';
+    },
+
+    getImage: function getImage() {
+      var _this = this;
+
+      var image = _$('<img />').attr('alt', this.options.url).attr('src', this.getThumbUrl());
+
+      image.on('click', function (e) {
+        e.preventDefault();
+
+        if (_this.options.settings.get('youTubePreview')) {
+          _Events.dispatch(new _PreviewEvent(_PreviewEvent.PREVIEW, new _backbone.Model({
+            format: 1,
+            cid: _this.options.id,
+            author: 'ExtPlug',
+            title: 'YouTube Video'
+          })));
+        } else {
+          var iframe = _$('<iframe />').attr('src', _this.getEmbedUrl()).attr('width', '100%').attr('height', image.height()).attr('frameborder', 0);
+
+          image.replaceWith(iframe);
+          if (_this.$icon) _this.$icon.remove();
+        }
+      });
+
+      return image;
+    },
+
+    render: function render() {
+      var _this2 = this;
+
+      this._super();
+
+      this.$image = this.getImage();
+      this.$icon = _$('<i />').addClass('icon icon-youtube-big');
+      this.$link.append(this.$icon, this.$image);
+
+      this.$image.on('load', function () {
+        _this2.trigger('load');
+      });
+
+      this.$el.addClass('extplug-youtube-embed');
+
+      return this;
+    }
+
+  });
+
+  module.exports = YouTubeView;
 });
 define('extplug/chat-images/style',['exports', 'module'], function (exports, module) {
   'use strict';
@@ -143,11 +254,20 @@ define('extplug/chat-images/style',['exports', 'module'], function (exports, mod
       'max-width': '100%',
       'max-height': '300px',
       'z-index': 10
+    },
+
+    '.extplug-chat-image.extplug-youtube-embed': {
+      '.icon': {
+        position: 'absolute',
+        opacity: 0.7,
+        bottom: 0,
+        right: 0
+      }
     }
 
   };
 });
-define('extplug/chat-images/main',['exports', 'module', 'extplug/Plugin', 'plug/core/Events', 'plug/facades/chatFacade', './embedders', './ImageView', './VideoView', './style', 'underscore', 'meld', 'jquery'], function (exports, module, _extplugPlugin, _plugCoreEvents, _plugFacadesChatFacade, _embedders, _ImageView, _VideoView, _style, _underscore, _meld, _jquery) {
+define('extplug/chat-images/main',['exports', 'module', 'extplug/Plugin', 'plug/core/Events', 'plug/facades/chatFacade', './embedders', './ImageView', './VideoView', './YouTubeView', './style', 'underscore', 'meld', 'jquery'], function (exports, module, _extplugPlugin, _plugCoreEvents, _plugFacadesChatFacade, _embedders, _ImageView, _VideoView, _YouTubeView, _style, _underscore, _meld, _jquery) {
   'use strict';
 
   var _interopRequire = function (obj) { return obj && obj.__esModule ? obj['default'] : obj; };
@@ -162,7 +282,9 @@ define('extplug/chat-images/main',['exports', 'module', 'extplug/Plugin', 'plug/
 
   var _VideoView2 = _interopRequire(_VideoView);
 
-  var _styles = _interopRequire(_style);
+  var _YouTubeView2 = _interopRequire(_YouTubeView);
+
+  var _style2 = _interopRequire(_style);
 
   var _$ = _interopRequire(_jquery);
 
@@ -171,6 +293,23 @@ define('extplug/chat-images/main',['exports', 'module', 'extplug/Plugin', 'plug/
   var ChatImages = _Plugin.extend({
     name: 'Chat Images',
     description: 'Embeds chat images in chat.',
+
+    settings: {
+      youTube: {
+        type: 'boolean',
+        'default': false,
+        label: 'Embed YouTube Videos',
+        description: 'Embeds Click-to-play YouTube Videos in the chat.'
+      },
+      youTubePreview: {
+        type: 'boolean',
+        'default': false,
+        label: 'Preview Videos',
+        description: 'Opens YouTube Videos in a Preview dialog instead of embedding them directly.'
+      }
+    },
+
+    style: _style2,
 
     commands: {
       collapse: 'closeAll'
@@ -194,7 +333,6 @@ define('extplug/chat-images/main',['exports', 'module', 'extplug/Plugin', 'plug/
         return joinpoint.proceed();
       });
       _Events.on('chat:afterreceive', this.onAfterReceive, this);
-      this.Style(_styles);
     },
 
     disable: function disable() {
@@ -213,7 +351,9 @@ define('extplug/chat-images/main',['exports', 'module', 'extplug/Plugin', 'plug/
     },
 
     closeAll: function closeAll() {
-      _$('#chat-messages .extplug-chat-image .extplug-close').click();
+      var closers = _$('#chat-messages .extplug-chat-image .extplug-close');
+      closers.click();
+      API.chatLog('Closed ' + closers.length + ' embedded images!');
     },
 
     onBeforeReceive: function onBeforeReceive(msg) {
@@ -240,6 +380,17 @@ define('extplug/chat-images/main',['exports', 'module', 'extplug/Plugin', 'plug/
           sources: ['' + path + '.webm', '' + path + '.mp4']
         }));
       });
+
+      if (this.settings.get('youTube')) {
+        msg.message = msg.message.replace(_embedders.youTube, function (url, id) {
+          return _this2.addEmbed(msg, url, new _YouTubeView2({
+            url: url,
+            id: id,
+            // for live preview setting status
+            settings: _this2.settings
+          }));
+        });
+      }
     },
     onAfterReceive: function onAfterReceive(msg, el) {
       var _this3 = this;
