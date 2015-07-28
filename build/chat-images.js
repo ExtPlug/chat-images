@@ -4,8 +4,10 @@ define('extplug/chat-images/embedders',["exports"], function (exports) {
   Object.defineProperty(exports, "__esModule", {
     value: true
   });
-  var generic = /\b(https?):\/\/\S+?\/\S+\.(?:jpe?g|gif|png|web[mp])\b(?:\?\S+)?/gi;
+  var generic = /\b(https?):\/\/\S+?\/\S+\.(?:jpe?g|gif|png|webp)\b(?:\?\S+)?/gi;
   exports.generic = generic;
+  var webm = /\b(https?):\/\/\S+?\/\S+\.webm\b(?:\?\S+)?/gi;
+  exports.webm = webm;
   var gifv = /https?:\/\/i\.imgur\.com\/(?:.{7})\.(?:gifv|mp4|webm)/gi;
   exports.gifv = gifv;
 });
@@ -32,7 +34,14 @@ define('extplug/chat-images/EmbedView',['exports', 'module', 'jquery', 'backbone
 
       this.$el.empty().append(this.$close).append(this.$link.append(image));
 
-      this.$close.on('click', this.close.bind(this));
+      this.$close.on('click', function (e) {
+        // ctrl+click closes all
+        if (e.ctrlKey) {
+          _$('#chat-messages .extplug-chat-image .extplug-close').click();
+        } else {
+          _this.close();
+        }
+      });
 
       return this;
     },
@@ -157,11 +166,20 @@ define('extplug/chat-images/main',['exports', 'module', 'extplug/Plugin', 'plug/
 
   var _$ = _interopRequire(_jquery);
 
-  var embedSymbol = window.Symbol ? Symbol('images') : '__' + Math.random();
+  var embedSymbol = Symbol('images');
 
   var ChatImages = _Plugin.extend({
     name: 'Chat Images',
     description: 'Embeds chat images in chat.',
+
+    commands: {
+      collapse: 'closeAll'
+    },
+
+    init: function init(id, ext) {
+      this._super(id, ext);
+      this.closeAll = this.closeAll.bind(this);
+    },
 
     enable: function enable() {
       var _this = this;
@@ -194,6 +212,10 @@ define('extplug/chat-images/main',['exports', 'module', 'extplug/Plugin', 'plug/
       return '<i id="' + id + '"></i>';
     },
 
+    closeAll: function closeAll() {
+      _$('#chat-messages .extplug-chat-image .extplug-close').click();
+    },
+
     onBeforeReceive: function onBeforeReceive(msg) {
       var _this2 = this;
 
@@ -201,6 +223,13 @@ define('extplug/chat-images/main',['exports', 'module', 'extplug/Plugin', 'plug/
 
       msg.message = msg.message.replace(_embedders.generic, function (url) {
         return _this2.addEmbed(msg, url, new _ImageView2({ url: url }));
+      });
+
+      msg.message = msg.message.replace(_embedders.webm, function (url) {
+        return _this2.addEmbed(msg, url, new _VideoView2({
+          url: url,
+          sources: [url]
+        }));
       });
 
       msg.message = msg.message.replace(_embedders.gifv, function (url) {
