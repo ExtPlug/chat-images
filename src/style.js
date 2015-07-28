@@ -29,6 +29,15 @@ export default {
     'max-width': '100%',
     'max-height': '300px',
     'z-index': 10
+  },
+
+  '.extplug-chat-image.extplug-youtube-embed': {
+    '.icon': {
+      'position': 'absolute',
+      'opacity': 0.7,
+      'bottom': 0,
+      'right': 0
+    }
   }
 
 }

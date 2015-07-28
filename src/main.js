@@ -4,6 +4,7 @@ import chatFacade from 'plug/facades/chatFacade'
 import * as embedders from './embedders'
 import ImageView from './ImageView'
 import VideoView from './VideoView'
+import YouTubeView from './YouTubeView'
 import style from './style'
 import { each, uniqueId } from 'underscore'
 import { around } from 'meld'
@@ -14,6 +15,21 @@ const embedSymbol = Symbol('images')
 const ChatImages = Plugin.extend({
   name: 'Chat Images',
   description: 'Embeds chat images in chat.',
+
+  settings: {
+    youTube: {
+      type: 'boolean',
+      default: false,
+      label: 'Embed YouTube Videos',
+      description: 'Embeds Click-to-play YouTube Videos in the chat.'
+    },
+    youTubePreview: {
+      type: 'boolean',
+      default: false,
+      label: 'Preview Videos',
+      description: 'Opens YouTube Videos in a Preview dialog instead of embedding them directly.'
+    }
+  },
 
   style: style,
 
@@ -80,6 +96,17 @@ const ChatImages = Plugin.extend({
         sources: [ `${path}.webm`, `${path}.mp4` ]
       }))
     })
+
+    if (this.settings.get('youTube')) {
+      msg.message = msg.message.replace(embedders.youTube, (url, id) => {
+        return this.addEmbed(msg, url, new YouTubeView({
+          url: url,
+          id: id,
+          // for live preview setting status
+          settings: this.settings
+        }))
+      })
+    }
   },
   onAfterReceive(msg, el) {
     if (msg[embedSymbol]) {
