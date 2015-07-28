@@ -71,7 +71,9 @@ const ChatImages = Plugin.extend({
   },
 
   closeAll() {
-    $('#chat-messages .extplug-chat-image .extplug-close').click()
+    let closers = $('#chat-messages .extplug-chat-image .extplug-close')
+    closers.click()
+    API.chatLog(`Closed ${closers.length} embedded images!`)
   },
 
   onBeforeReceive(msg) {
