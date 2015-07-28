@@ -4,7 +4,7 @@ import chatFacade from 'plug/facades/chatFacade'
 import * as embedders from './embedders'
 import ImageView from './ImageView'
 import VideoView from './VideoView'
-import styles from './style'
+import style from './style'
 import { each, uniqueId } from 'underscore'
 import { around } from 'meld'
 import $ from 'jquery'
@@ -14,6 +14,8 @@ const embedSymbol = Symbol('images')
 const ChatImages = Plugin.extend({
   name: 'Chat Images',
   description: 'Embeds chat images in chat.',
+
+  style: style,
 
   commands: {
     collapse: 'closeAll'
@@ -35,7 +37,6 @@ const ChatImages = Plugin.extend({
       return joinpoint.proceed()
     })
     Events.on('chat:afterreceive', this.onAfterReceive, this)
-    this.Style(styles)
   },
 
   disable() {
