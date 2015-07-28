@@ -32,6 +32,14 @@ const EmbedView = View.extend({
     return this
   },
 
+  resize() {
+    let w = this.$link.width()
+    if (w < this.$el.width()) {
+      // keep things at least 30px wide so the close icon fits in the message
+      this.$el.width(Math.max(w, 30))
+    }
+  },
+
   close() {
     this.$link.text(this.options.url)
     this.$el.replaceWith(this.$link)

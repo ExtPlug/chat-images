@@ -1,4 +1,5 @@
 import EmbedView from './EmbedView'
+import $ from 'jquery'
 
 const ImageView = EmbedView.extend({
   className: 'extplug-chat-image',
@@ -16,6 +17,7 @@ const ImageView = EmbedView.extend({
     this.$link.append(this.$image)
 
     this.$image.on('load', () => {
+      this.resize()
       this.trigger('load')
     })
 
