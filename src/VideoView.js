@@ -5,7 +5,7 @@ const getExtension = url => new URL(url).pathname.split('.').pop()
 const VideoView = EmbedView.extend({
 
   getImage() {
-    this.$video = $('<video />').attr({
+    let video = $('<video />').attr({
       autoplay: true,
       loop: true,
       muted: true,
@@ -13,7 +13,7 @@ const VideoView = EmbedView.extend({
     })
 
     this.options.sources.forEach(url => {
-      this.$video.append(
+      video.append(
         $('<source />').attr({
           href: url,
           type: `video/${getExtension(url)}`
@@ -21,7 +21,20 @@ const VideoView = EmbedView.extend({
       )
     })
 
-    return this.$video
+    return video
+  },
+
+  render() {
+    this._super()
+
+    this.$video = this.getImage()
+    this.$link.append(this.$video)
+
+    this.$video.on('load', () => {
+      this.trigger('load')
+    })
+
+    return this
   }
 })
 
