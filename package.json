@@ -1,6 +1,6 @@
 {
   "name": "extplug-chat-images",
-  "version": "0.1.1",
+  "version": "0.2.0",
   "license": "MIT",
   "description": "ExtPlug plugin that embeds image links in the chat.",
   "keywords": [
