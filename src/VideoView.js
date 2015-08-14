@@ -1,6 +1,6 @@
-import EmbedView from './EmbedView'
+import EmbedView from './EmbedView';
 
-const getExtension = url => new URL(url).pathname.split('.').pop()
+const getExtension = url => new URL(url).pathname.split('.').pop();
 
 const VideoView = EmbedView.extend({
 
@@ -10,7 +10,7 @@ const VideoView = EmbedView.extend({
       loop: true,
       muted: true,
       poster: this.options.poster || ''
-    })
+    });
 
     this.options.sources.forEach(url => {
       video.append(
@@ -18,24 +18,24 @@ const VideoView = EmbedView.extend({
           href: url,
           type: `video/${getExtension(url)}`
         })
-      )
-    })
+      );
+    });
 
-    return video
+    return video;
   },
 
   render() {
-    this._super()
+    this._super();
 
-    this.$video = this.getImage()
-    this.$link.append(this.$video)
+    this.$video = this.getImage();
+    this.$link.append(this.$video);
 
     this.$video.on('load', () => {
-      this.trigger('load')
-    })
+      this.trigger('load');
+    });
 
-    return this
+    return this;
   }
-})
+});
 
-export default VideoView
+export default VideoView;
