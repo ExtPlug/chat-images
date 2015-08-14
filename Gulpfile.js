@@ -1,3 +1,4 @@
+var browserify = require('browserify')
 var gulp   = require('gulp')
 var babel  = require('gulp-babel')
 var rjs    = require('requirejs')
@@ -5,6 +6,7 @@ var fs     = require('fs')
 var mkdirp = require('mkdirp')
 var del    = require('del')
 var runseq = require('run-sequence')
+var source = require('vinyl-source-stream')
 
 var pluginPath = 'extplug/chat-images'
 
@@ -16,6 +18,16 @@ gulp.task('babel', function () {
   return gulp.src('src/**/*')
     .pipe(babel({ modules: 'amd' }))
     .pipe(gulp.dest('lib/'))
+})
+
+gulp.task('lib-youtube-regex', function () {
+  return browserify({
+    entries: './node_modules/youtube-regex/index.js',
+    standalone: 'youtube-regex'
+  })
+    .bundle()
+    .pipe(source('youtube-regex.js'))
+    .pipe(gulp.dest('build/_deps/'))
 })
 
 gulp.task('rjs', function (done) {
@@ -33,7 +45,9 @@ gulp.task('rjs', function (done) {
     underscore: 'empty:',
     // libraries used by extplug
     meld: 'empty:',
-    'plug-modules': 'empty:'
+    'plug-modules': 'empty:',
+    // libraries used by chat-images
+    'youtube-regex': 'build/_deps/youtube-regex'
   }
 
   paths[pluginPath] = 'lib/'
@@ -52,6 +66,6 @@ gulp.task('rjs', function (done) {
   })
 })
 
-gulp.task('build', function () {
-  return runseq('clean-lib', 'babel', 'rjs')
+gulp.task('build', function (cb) {
+  runseq('clean-lib', [ 'babel', 'lib-youtube-regex' ], 'rjs', cb)
 })
