@@ -3,6 +3,7 @@ import Events from 'plug/core/Events';
 import chatFacade from 'plug/facades/chatFacade';
 import * as embedders from './embedders';
 import ImageView from './ImageView';
+import GfycatView from './GfycatView';
 import VideoView from './VideoView';
 import YouTubeView from './YouTubeView';
 import style from './style';
@@ -104,6 +105,10 @@ const ChatImages = Plugin.extend({
         poster: `${path}.jpg`,
         sources: [ `${path}.webm`, `${path}.mp4` ]
       }));
+    });
+
+    msg.message = msg.message.replace(embedders.gfycat, (url, name) => {
+      return this.addEmbed(msg, url, new GfycatView({ name: name }));
     });
 
     if (this.settings.get('youTube')) {
