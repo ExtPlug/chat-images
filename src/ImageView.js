@@ -14,7 +14,7 @@ const ImageView = EmbedView.extend({
     this._super();
 
     this.$image = this.getImage();
-    this.$link.append(this.$image);
+    this.$embed.append(this.$image);
 
     this.$image.on('load', () => {
       this.resize();

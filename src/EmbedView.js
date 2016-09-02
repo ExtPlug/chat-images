@@ -9,15 +9,13 @@ const EmbedView = View.extend({
       .addClass('extplug-close')
       .append($('<i />').addClass('icon icon-dialog-close'));
 
-    this.$link = $('<a />')
-      .attr('href', this.options.url)
-      .attr('title', this.options.url)
-      .attr('target', '_blank');
+    this.$embed = $('<div />')
+      .addClass('extplug-chat-image-embed');
 
     this.$el
       .empty()
       .append(this.$close)
-      .append(this.$link);
+      .append(this.$embed);
 
     this.$close.on('click', e => {
       // ctrl+click closes all
@@ -41,10 +39,8 @@ const EmbedView = View.extend({
   },
 
   close() {
-    this.$link.text(this.options.url);
-    this.$el.replaceWith(this.$link);
     this.destroy();
-    this.$link = null;
+    this.$embed = null;
     this.$close = null;
   }
 

@@ -10,6 +10,13 @@ import { each, uniqueId } from 'underscore';
 import { around } from 'meld';
 import $ from 'jquery';
 
+function truncate(str, len) {
+  if (str.length > len) {
+    return `${str.slice(0, len - 3)}…`;
+  }
+  return str;
+}
+
 const embedSymbol = Symbol('images');
 
 const ChatImages = Plugin.extend({
@@ -113,7 +120,14 @@ const ChatImages = Plugin.extend({
   onAfterReceive(msg, el) {
     if (msg[embedSymbol]) {
       msg[embedSymbol].forEach(embed => {
-        el.find(`#${embed.id}`).replaceWith(embed.view.$el);
+        let href = $('<a />')
+          .text(truncate(embed.url, 50))
+          .attr('href', embed.url)
+          .attr('target', '_blank');
+
+        el.find(`#${embed.id}`).replaceWith(href);
+        embed.view.$el.insertAfter(href);
+
         embed.view.once('load', this.checkScroll, this);
         embed.view.render();
       });

@@ -53,7 +53,7 @@ const YouTubeView = EmbedView.extend({
 
     this.$image = this.getImage();
     this.$icon = $('<i />').addClass('icon icon-youtube-big');
-    this.$link.append(this.$icon, this.$image);
+    this.$embed.append(this.$icon, this.$image);
 
     this.$image.on('load', () => {
       this.trigger('load');

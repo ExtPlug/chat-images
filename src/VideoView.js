@@ -28,7 +28,7 @@ const VideoView = EmbedView.extend({
     this._super();
 
     this.$video = this.getImage();
-    this.$link.append(this.$video);
+    this.$embed.append(this.$video);
 
     this.$video.on('load', () => {
       this.trigger('load');
