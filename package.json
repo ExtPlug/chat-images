@@ -6,20 +6,7 @@
   "keywords": [
     "extplug-plugin"
   ],
-  "dependencies": {
-  },
-  "devDependencies": {
-    "browserify": "^11.0.1",
-    "del": "^1.2.0",
-    "gulp": "^3.8.11",
-    "gulp-babel": "^5.1.0",
-    "mkdirp": "^0.5.1",
-    "requirejs": "^2.1.18",
-    "run-sequence": "^1.1.1",
-    "vinyl-source-stream": "^1.1.0"
-  },
   "scripts": {
-    "build": "gulp build",
-    "test": "jscs src"
+    "build": "extplug bundle src/main.js build/chat-images.js"
   }
 }
