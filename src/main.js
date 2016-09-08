@@ -6,7 +6,7 @@ import ImageView from './ImageView';
 import GfycatView from './GfycatView';
 import VideoView from './VideoView';
 import YouTubeView from './YouTubeView';
-import style from './style';
+import style from './style.css';
 import { each, uniqueId } from 'underscore';
 import { around } from 'meld';
 import $ from 'jquery';
