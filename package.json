@@ -8,5 +8,8 @@
   ],
   "scripts": {
     "build": "extplug bundle src/main.js build/chat-images.js"
+  },
+  "dependencies": {
+    "truncate-url": "^0.1.2"
   }
 }
