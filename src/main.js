@@ -6,17 +6,11 @@ import ImageView from './ImageView';
 import GfycatView from './GfycatView';
 import VideoView from './VideoView';
 import YouTubeView from './YouTubeView';
-import style from './style';
+import style from './style.css';
 import { each, uniqueId } from 'underscore';
 import { around } from 'meld';
 import $ from 'jquery';
-
-function truncate(str, len) {
-  if (str.length > len) {
-    return `${str.slice(0, len - 3)}…`;
-  }
-  return str;
-}
+import truncate from 'truncate-url';
 
 const embedSymbol = Symbol('images');
 
