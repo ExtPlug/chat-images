@@ -3,13 +3,24 @@
   "version": "0.3.0",
   "license": "MIT",
   "description": "ExtPlug plugin that embeds image links in the chat.",
+  "main": "build/chat-images.js",
+  "repository": "extplug/chat-images",
   "keywords": [
-    "extplug-plugin"
+    "extplug-plugin",
+    "plug.dj"
+  ],
+  "files": [
+    "build",
+    "src"
   ],
   "scripts": {
+    "prepublishOnly": "npm run build -- --minify",
     "build": "extplug bundle src/main.js build/chat-images.js"
   },
   "dependencies": {
     "truncate-url": "^0.1.2"
+  },
+  "devDependencies": {
+    "extplug-cli": "^1.0.0"
   }
 }
