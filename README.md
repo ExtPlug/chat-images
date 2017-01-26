@@ -1,6 +1,8 @@
 Chat Images
 ===========
 
+[![Greenkeeper badge](https://badges.greenkeeper.io/extplug/chat-images.svg)](https://greenkeeper.io/)
+
 ExtPlug plugin that embeds image links in the chat.
 
 ## Installation
