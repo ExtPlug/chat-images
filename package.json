@@ -18,7 +18,7 @@
     "build": "extplug bundle src/main.js build/chat-images.js"
   },
   "dependencies": {
-    "truncate-url": "^0.1.2"
+    "truncate-url": "^1.0.0"
   },
   "devDependencies": {
     "extplug-cli": "^1.0.0"
